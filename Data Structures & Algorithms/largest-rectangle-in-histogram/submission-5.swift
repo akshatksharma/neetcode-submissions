@@ -1,0 +1,104 @@
+class Solution {
+    /*
+        monotonic stack + hashmap: 
+            time: O(N)
+            space: O(N)
+        store monotonic increasing(?) stack ... if we see any smaller elements we pop
+        store hashmap of height ending at i
+
+        for each i
+            we pop larger elements as needed
+            then we calc area using the top element and i + the area of hashmap[top elem idx]
+            see if it's the max
+            set hashmap[i] = area
+
+        XX
+        XXX
+        XXX
+        XX
+        
+        (0,2)
+        (0,2) (1,3)
+        (0,2) (1,3) (2,3)
+        (0,2) | (1, 2)
+
+        X
+        |
+        XX
+    */
+
+    func largestRectangleArea(_ heights: [Int]) -> Int {
+        var stack = [(Int, Int)]() // stores bars in increasing height + idx where it could start (idx, height)
+        var maxArea = 0
+
+        for (idx, height) in heights.enumerated() {
+            var validStartIdx = idx
+
+            while let (lastHeightStartIdx, lastHeight) = stack.last, height < lastHeight {
+                _ = stack.popLast()
+                let area = lastHeight * (idx - lastHeightStartIdx)
+                maxArea = max(maxArea, area)
+
+                validStartIdx = lastHeightStartIdx
+            }
+            stack.append((validStartIdx, height))
+        }
+
+        for (startIdx, height) in stack {
+            let area = height * (heights.count - startIdx)
+            maxArea = max(maxArea, area)
+        }
+
+        return maxArea
+    }
+
+    /*
+        heights i = height of bar, each has width 1 .
+        largest rectangle amongst all the bars
+
+        qs/ edge cases 
+        - heights can be 0? -> YES
+        - duplicate heights
+        - can we have 0 heights? -> NO
+
+        - can it be a rectangle if 
+
+
+        1 3 4 4 4
+        XX    
+        XXX   
+        XX  
+        X
+        X
+
+        (2,0) (3,1)
+            calc area as min(2,3) * ((1-0) + 1) = 4
+            hashmap[2] = 4
+        (2,0)| (2,2)
+            calc area as min(2,2) * (2-0 + 1) + hashmap[0] = 6 + 0
+            hashmap[3] = 6
+        (1,3)
+            we want to be able to calc area as 4
+                if we knock out all elements in the stack, we compare to idx=0
+                (1) * (3-0+1) = 4
+                hashmap[4] = 4
+        (1,3) (1,4)
+            we want to be able to calc as 5
+                area between 3 and 4 = 1
+                how do we remember that the area of (1,3) is 3
+                    hashmap ... stores the largest height ending at i (i=0 == 0)
+
+        ------------
+
+        within a given range, we're bounded by the smallest height 
+
+        brute force: try all N^2 subarrays, see the area for each and track largest
+            time: O(N^2) there's N amortized time work
+            space: O(1)
+
+        optimized:
+            q is what subarrays can we discard
+            we can't get rid of smaller heights since we might be bounded by them
+            in a wider approach
+    */
+}
